@@ -2,6 +2,7 @@ var Client = require('../')
 var assert = require('assert')
 var async = require('async')
 var ok = require('okay')
+var Buffer = require('safe-buffer').Buffer
 
 describe('async query', function () {
   before(function (done) {
@@ -55,6 +56,17 @@ describe('async query', function () {
         if (err) return done(err)
         assert.equal(rows.length, 1)
         assert.equal(rows[0].x, 123)
+        done()
+      })
+    }.bind(this)
+    async.timesSeries(3, runQuery, done)
+  })
+
+  it('parameters that are buffers fail', function (done) {
+    var runQuery = function (n, done) {
+      this.client.query('SELECT $1::bytea AS x', [Buffer.from('deadbeef', 'hex')], function (err, rows) {
+        assert.ok(err)
+        assert.ok(err.message.startsWith('Invalid type for parameter at index'))
         done()
       })
     }.bind(this)

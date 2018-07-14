@@ -81,7 +81,23 @@ Client.prototype.prepare = function (statementName, text, nParams, cb) {
   })
 }
 
+function validateParameters(parameters) {
+  if (!Array.isArray(parameters)) {
+    return new Error('parameters must be an array')
+  }
+  for (var i = 0; i < parameters.length; i++) {
+    var value = parameters[i];
+    if (value !== null && typeof (value) !== 'string' && typeof (value) !== 'number') {
+      return new Error('Invalid type for parameter at index ' + i + '. Must be either either null, string, or number.');
+    }
+  }
+}
+
 Client.prototype.execute = function (statementName, parameters, cb) {
+  var paramErr = validateParameters(parameters);
+  if (paramErr) {
+    return cb(paramErr);
+  }
   var self = this
 
   var fn = function () {
@@ -128,6 +144,10 @@ Client.prototype.prepareSync = function (statementName, text, nParams) {
 }
 
 Client.prototype.executeSync = function (statementName, parameters) {
+  var paramErr = validateParameters(parameters);
+  if (paramErr) {
+    throw paramErr;
+  }
   this.pq.execPrepared(statementName, parameters)
   throwIfError(this.pq)
   return buildResult(this.pq, this._types, this.arrayMode).rows

@@ -1,5 +1,6 @@
 var Client = require('../')
 var assert = require('assert')
+var Buffer = require('safe-buffer').Buffer
 
 describe('query sync', function (done) {
   before(function () {
@@ -33,6 +34,12 @@ describe('query sync', function (done) {
     var rows = this.client.querySync('SELECT $1::text AS name', [null])
     assert.equal(rows.length, 1)
     assert.equal(rows[0].x, null)
+  })
+
+  it('parameterized query with Buffer parameter fails', function () {
+    assert.throws(function () {
+      this.client.querySync('SELECT $1::bytea AS x', [Buffer.from('deadbeef', 'hex')])
+    }, /^Invalid type for parameter at index/)
   })
 
   it('prepared statement works', function () {
