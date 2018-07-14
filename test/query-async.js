@@ -37,6 +37,30 @@ describe('async query', function () {
     async.timesSeries(3, runQuery, done)
   })
 
+  it('parameters that are null work', function (done) {
+    var runQuery = function (n, done) {
+      this.client.query('SELECT $1::int AS x', [null], function (err, rows) {
+        if (err) return done(err)
+        assert.equal(rows.length, 1)
+        assert.equal(rows[0].x, null)
+        done()
+      })
+    }.bind(this)
+    async.timesSeries(3, runQuery, done)
+  })
+
+  it('parameters that are numbers work', function (done) {
+    var runQuery = function (n, done) {
+      this.client.query('SELECT $1::int AS x', [123], function (err, rows) {
+        if (err) return done(err)
+        assert.equal(rows.length, 1)
+        assert.equal(rows[0].x, 123)
+        done()
+      })
+    }.bind(this)
+    async.timesSeries(3, runQuery, done)
+  })
+
   it('prepared, named statements work', function (done) {
     var client = this.client
     client.prepare('test', 'SELECT $1::text as name', 1, function (err) {

@@ -23,6 +23,18 @@ describe('query sync', function (done) {
     assert.equal(rows[0].name, 'Brian')
   })
 
+  it('parameterized query with number parameter works', function () {
+    var rows = this.client.querySync('SELECT $1::int AS x', [123])
+    assert.equal(rows.length, 1)
+    assert.equal(rows[0].x, 123)
+  })
+
+  it('parameterized query with null parameter works', function () {
+    var rows = this.client.querySync('SELECT $1::text AS name', [null])
+    assert.equal(rows.length, 1)
+    assert.equal(rows[0].x, null)
+  })
+
   it('prepared statement works', function () {
     this.client.prepareSync('test', 'SELECT $1::text as name', 1)
 
